@@ -49,6 +49,7 @@ variable "private_subnet_b_cidr" {
 variable "github_username" {
   description = "Your GitHub username"
   type        = string
+  default     = "Nemloh27"
 }
 
 variable "github_repo" {
