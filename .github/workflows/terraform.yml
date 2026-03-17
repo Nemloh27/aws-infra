@@ -1,0 +1,79 @@
+name: Terraform
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'terraform/infra/**'
+  push:
+    branches: [main]
+    paths:
+      - 'terraform/infra/**'
+
+permissions:
+  id-token: write
+  contents: read
+  pull-requests: write
+
+jobs:
+  plan:
+    name: Terraform plan
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: us-east-1
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Terraform init
+        working-directory: terraform/infra
+        run: terraform init
+
+      - name: Terraform format check
+        working-directory: terraform/infra
+        run: terraform fmt -check
+
+      - name: Terraform plan
+        working-directory: terraform/infra
+        run: terraform plan -no-color
+        env:
+          TF_VAR_github_username: ${{ vars.GH_USERNAME }}
+          TF_VAR_github_repo: aws-infra
+
+  apply:
+    name: Terraform apply
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: us-east-1
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Terraform init
+        working-directory: terraform/infra
+        run: terraform init
+
+      - name: Terraform apply
+        working-directory: terraform/infra
+        run: terraform apply -auto-approve
+        env:
+          TF_VAR_github_username: ${{ vars.GH_USERNAME }}
+          TF_VAR_github_repo: aws-infra

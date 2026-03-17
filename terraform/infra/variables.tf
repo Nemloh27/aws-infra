@@ -45,3 +45,14 @@ variable "private_subnet_b_cidr" {
   type        = string
   default     = "10.0.4.0/24"
 }
+
+variable "github_username" {
+  description = "Your GitHub username"
+  type        = string
+}
+
+variable "github_repo" {
+  description = "Your GitHub repo name"
+  type        = string
+  default     = "aws-infra"
+}
