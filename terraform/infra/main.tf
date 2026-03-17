@@ -8,16 +8,14 @@ terraform {
   required_version = ">= 1.6.0"
 
   backend "s3" {
-    bucket         = "terraform-state-583906531226"
-    key            = "infra/terraform.tfstate"
-    region         = "us-east-1"
-    dynamodb_table = "terraform-locks"
-    encrypt        = true
-    profile        = "terraform"
+    bucket       = "terraform-state-583906531226"
+    key          = "infra/terraform.tfstate"
+    region       = "us-east-1"
+    use_lockfile = true
+    encrypt      = true
   }
 }
 
 provider "aws" {
-  region  = "us-east-1"
-  profile = "terraform"
+  region = "us-east-1"
 }
