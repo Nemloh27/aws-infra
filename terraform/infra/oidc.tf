@@ -77,6 +77,11 @@ resource "aws_iam_role_policy_attachment" "github_actions_iam" {
   policy_arn = "arn:aws:iam::aws:policy/IAMFullAccess"
 }
 
+resource "aws_iam_role_policy_attachment" "github_actions_ecr" {
+  role       = aws_iam_role.github_actions.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryFullAccess"
+}
+
 # Output the role ARN - we'll need this in the pipeline
 output "github_actions_role_arn" {
   description = "ARN of the IAM role for GitHub Actions"
