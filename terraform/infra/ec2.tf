@@ -14,7 +14,7 @@ data "aws_ami" "amazon_linux" {
   }
 }
 
-# Launch template - blueprint for EC2 instances
+# Launch template - now runs Docker and pulls from ECR
 resource "aws_launch_template" "main" {
   name_prefix   = "${var.project_name}-"
   image_id      = data.aws_ami.amazon_linux.id
@@ -25,14 +25,27 @@ resource "aws_launch_template" "main" {
     security_groups             = [aws_security_group.ec2.id]
   }
 
-  # User data - shell script that runs when the instance first boots
+  # Attach the IAM instance profile so EC2 can pull from ECR
+  iam_instance_profile {
+    name = aws_iam_instance_profile.ec2.name
+  }
+
+  # User data - install Docker, pull image from ECR and run it
   user_data = base64encode(<<-EOF
     #!/bin/bash
     dnf update -y
-    dnf install -y nginx
-    systemctl start nginx
-    systemctl enable nginx
-    echo "<h1>Hello from $(hostname)</h1>" > /usr/share/nginx/html/index.html
+    dnf install -y docker
+    systemctl start docker
+    systemctl enable docker
+
+    # Log in to ECR
+    aws ecr get-login-password --region ${var.aws_region} | \
+      docker login --username AWS --password-stdin ${aws_ecr_repository.app.repository_url}
+
+    # Pull and run the container
+    docker pull ${aws_ecr_repository.app.repository_url}:latest
+    docker run -d --name app -p 80:80 --restart always \
+      ${aws_ecr_repository.app.repository_url}:latest
   EOF
   )
 
@@ -45,7 +58,7 @@ resource "aws_launch_template" "main" {
   }
 }
 
-# Auto Scaling Group - manages the fleet of EC2 instances
+# Auto Scaling Group
 resource "aws_autoscaling_group" "main" {
   name                = "${var.project_name}-asg"
   desired_capacity    = 2
@@ -60,7 +73,7 @@ resource "aws_autoscaling_group" "main" {
   }
 
   health_check_type         = "ELB"
-  health_check_grace_period = 120
+  health_check_grace_period = 300
 
   tag {
     key                 = "Name"
