@@ -57,3 +57,9 @@ variable "github_repo" {
   type        = string
   default     = "aws-infra"
 }
+
+variable "instance_type" {
+  description = "EC2 instance type"
+  type        = string
+  default     = "t3.micro"
+}
