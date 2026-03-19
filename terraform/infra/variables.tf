@@ -69,3 +69,8 @@ variable "key_pair_name" {
   type        = string
   default     = "devops-training-key"
 }
+
+variable "my_ip" {
+  description = "Your public IP address for SSH access to bastion"
+  type        = string
+}
