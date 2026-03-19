@@ -48,6 +48,7 @@ jobs:
         env:
           TF_VAR_github_username: ${{ vars.GH_USERNAME }}
           TF_VAR_github_repo: aws-infra
+          TF_VAR_my_ip: ${{ vars.MY_IP }}
 
   apply:
     name: Terraform apply
@@ -77,3 +78,4 @@ jobs:
         env:
           TF_VAR_github_username: ${{ vars.GH_USERNAME }}
           TF_VAR_github_repo: aws-infra
+          TF_VAR_my_ip: ${{ vars.MY_IP }}
