@@ -1,0 +1,12 @@
+- name: Configure EC2 instances
+  hosts: env_dev
+  become: true
+
+  vars:
+    ansible_ssh_common_args: >-
+      -A
+      -o ProxyJump=ec2-user@{{ lookup('env', 'BASTION_IP') }}
+      -o StrictHostKeyChecking=no
+
+  roles:
+    - docker_app

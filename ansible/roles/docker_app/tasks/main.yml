@@ -1,0 +1,36 @@
+- name: Install Docker
+  dnf:
+    name: docker
+    state: present
+
+- name: Start and enable Docker
+  systemd:
+    name: docker
+    state: started
+    enabled: true
+
+- name: Install AWS CLI
+  dnf:
+    name: aws-cli
+    state: present
+
+- name: Log in to ECR
+  shell: >
+    aws ecr get-login-password --region {{ aws_region }} |
+    docker login --username AWS --password-stdin {{ ecr_repository_url }}
+  changed_when: false
+
+- name: Pull latest image from ECR
+  community.docker.docker_image:
+    name: "{{ ecr_repository_url }}:{{ app_image_tag }}"
+    source: pull
+    force_source: true
+
+- name: Run application container
+  community.docker.docker_container:
+    name: "{{ container_name }}"
+    image: "{{ ecr_repository_url }}:{{ app_image_tag }}"
+    state: started
+    restart_policy: always
+    ports:
+      - "{{ host_port }}:{{ container_port }}"

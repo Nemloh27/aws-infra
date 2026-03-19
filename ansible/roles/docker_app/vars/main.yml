@@ -1,0 +1,3 @@
+container_name: app
+container_port: 80
+host_port: 80
